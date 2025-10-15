@@ -9,7 +9,7 @@ CONFIG_FILE = "config.json"
 def load_config():
     """Загружает настройки из файла. Возвращает словарь с настройками."""
     defaults = {
-        "speed": "10",
+        "speed": "1",
         "unit": "KB/s",
         "hotkey": "f2",
         "theme": "dark"
