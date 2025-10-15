@@ -7,27 +7,45 @@ CONFIG_FILE = "config.json"
 
 
 def load_config():
-    """Загружает настройки из файла. Возвращает словарь с настройками."""
+    """Загружает настройки и проверяет их на корректность."""
     defaults = {
-        "speed": "1",
+        "speed": "10",
         "unit": "KB/s",
         "hotkey": "f2",
         "theme": "dark"
     }
     try:
         with open(CONFIG_FILE, 'r') as f:
-            # Обновляем значения по умолчанию загруженными, чтобы ничего не сломалось,
-            # если в будущем в конфиг добавятся новые ключи.
             config = defaults.copy()
             config.update(json.load(f))
+
+            # --- УЛУЧШЕННАЯ ПРОВЕРКА ---
+            # 1. Получаем значение hotkey из конфига.
+            hotkey_value = config.get("hotkey")
+
+            # 2. Проверяем, существует ли оно и является ли строкой.
+            #    Если да, убираем пробелы по краям.
+            if hotkey_value and isinstance(hotkey_value, str):
+                config["hotkey"] = hotkey_value.strip()
+            else:
+                # Если значение не строка или отсутствует, ставим по умолчанию.
+                config["hotkey"] = defaults["hotkey"]
+
+            # 3. Финальная проверка: если после очистки строка пустая,
+            #    ставим значение по умолчанию.
+            if not config["hotkey"]:
+                print("Warning: Hotkey in config was empty after cleaning. Using default 'f2'.")
+                config["hotkey"] = defaults["hotkey"]
+
             return config
+
     except (FileNotFoundError, json.JSONDecodeError):
-        # Если файла нет или он поврежден, возвращаем настройки по умолчанию.
+        # Если файла нет или он поврежден, возвращаем стандартные настройки.
         return defaults
 
 
 if __name__ == "__main__":
-    # 1. Загружаем конфиг ПЕРЕД созданием чего-либо
+    # 1. Загружаем проверенный и очищенный конфиг
     config = load_config()
 
     # 2. Создаём экземпляр логики ("мозг")
